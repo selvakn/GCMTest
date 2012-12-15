@@ -23,7 +23,7 @@ get '/push' do
       :data => {
           :id => message_id
       },
-      :collapse_key => "test-message"
+      :collapse_key => "message"
   }
   STORE.set(message_id, {:start => Time.now}.to_json)
   response = gcm.send_notification(registration_ids, options)

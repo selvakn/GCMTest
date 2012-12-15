@@ -2,18 +2,15 @@ package com.tw.activities;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 import com.google.android.gcm.GCMRegistrar;
+import com.tw.GCMIntentService;
 import com.tw.R;
 
-public class MainActivity extends Activity
-{
-    private static final String TAG = "GCM_TEST";
-    private static final String SENDER_ID = "692730889083";
+import static com.tw.Utils.toast;
 
+public class MainActivity extends Activity {
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
@@ -21,9 +18,9 @@ public class MainActivity extends Activity
         GCMRegistrar.checkManifest(this);
         final String regId = GCMRegistrar.getRegistrationId(this);
         if (regId.equals("")) {
-          GCMRegistrar.register(this, SENDER_ID);
+            GCMRegistrar.register(this, GCMIntentService.SENDER_ID);
         } else {
-          Log.v(TAG, "Already registered");
+            toast(this, "Already registered with GCM");
         }
     }
 }

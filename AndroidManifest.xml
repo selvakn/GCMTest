@@ -4,6 +4,9 @@
       android:versionCode="1"
       android:versionName="1.0">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <permission android:name="com.tw.permission.C2D_MESSAGE" android:protectionLevel="signature" />
     <uses-permission android:name="com.tw.permission.C2D_MESSAGE" />
 
@@ -28,7 +31,7 @@
           <intent-filter>
             <action android:name="com.google.android.c2dm.intent.RECEIVE" />
             <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
-            <category android:name="my_app_package" />
+            <category android:name="com.tw" />
           </intent-filter>
         </receiver>
         <service android:name=".GCMIntentService" />
