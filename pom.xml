@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.tw</groupId>
@@ -9,13 +9,25 @@
     <packaging>apk</packaging>
     <name>GCM Test</name>
 
+    <properties>
+        <sign.keystore>${project.basedir}/sundae.keystore</sign.keystore>
+        <sign.alias>gcm-test</sign.alias>
+        <sign.storepass>gcmtest</sign.storepass>
+        <sign.keypass>gcmtest</sign.keypass>
+    </properties>
+
     <dependencies>
-      <dependency>
-        <groupId>com.google.android</groupId>
-        <artifactId>android</artifactId>
-        <version>1.5_r4</version>
-        <scope>provided</scope>
-      </dependency>
+        <dependency>
+            <groupId>com.google.android</groupId>
+            <artifactId>android</artifactId>
+            <version>1.5_r4</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google</groupId>
+            <artifactId>gcm-client</artifactId>
+            <version>4.0.3</version>
+        </dependency>
     </dependencies>
     <build>
         <finalName>${project.artifactId}</finalName>
