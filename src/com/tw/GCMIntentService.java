@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import com.google.android.gcm.GCMBaseIntentService;
+import com.google.android.gcm.GCMRegistrar;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -18,6 +19,7 @@ public class GCMIntentService extends GCMBaseIntentService
 
     public static final String ERROR_SENDING_STATISTICS = "Error sending statistics";
     public static final String SENDER_ID = "692730889083";
+    public static final String STATISTICS_ENDPOINT = "http://192.168.2.101:4567";
 
     public GCMIntentService() {
         super(SENDER_ID);
@@ -28,7 +30,7 @@ public class GCMIntentService extends GCMBaseIntentService
         toast(this, "Message Received");
         Bundle bundleExtras = intent.getExtras();
         String id = bundleExtras.getString("id");
-        performGet(format("http://10.0.2.2:4567/received/%s", id));
+        performGet(format("/received/%s/%s", GCMRegistrar.getRegistrationId(this), id));
     }
 
     @Override
@@ -38,7 +40,7 @@ public class GCMIntentService extends GCMBaseIntentService
 
     @Override
     protected void onRegistered(Context context, String registrationId) {
-        performGet(format("http://10.0.2.2:4567/register/%s", registrationId));
+        performGet(format("/register/%s", registrationId));
         toast(this, "Device Registered");
     }
 
@@ -49,7 +51,7 @@ public class GCMIntentService extends GCMBaseIntentService
 
     private void performGet(String url) {
         HttpClient client = new DefaultHttpClient();
-        HttpGet httpGet = new HttpGet(url);
+        HttpGet httpGet = new HttpGet(STATISTICS_ENDPOINT + url);
         try {
             client.execute(httpGet);
         } catch (IOException e) {

@@ -3,20 +3,35 @@ require 'bundler'
 require 'securerandom'
 require 'json'
 Bundler.require
+require  'dm-migrations'
 
 API_KEY = "AIzaSyDN9vs2KvUeDeHqAWT56CqnriFhvZCvL-8"
-REGISTRATION_IDS = "registration_ids"
-STORE = Redis.new
+DataMapper::Logger.new($stdout, :debug)
+DataMapper.setup(:default, 'mysql://root@localhost/gcm_test')
+
+class Stats
+  include DataMapper::Resource
+  property :id, Serial
+  property :message_id, Text
+  property :post_time, DateTime
+  property :received_time, DateTime
+  belongs_to :device
+end
+
+class Device
+  include DataMapper::Resource
+  property :id, Serial
+  property :registration_id, Text
+end
+
+DataMapper.auto_upgrade!
 
 get '/register/:registration_id' do
-  registration_ids = JSON.parse(STORE.get(REGISTRATION_IDS) || "[]")
-  current_registration_id = params[:registration_id]
-  registration_ids << current_registration_id unless registration_ids.include?(current_registration_id)
-  STORE.set(REGISTRATION_IDS, registration_ids.to_json)
+  Device.create! :registration_id => params[:registration_id]
 end
 
 get '/push' do
-  registration_ids = JSON.parse(STORE.get(REGISTRATION_IDS))
+  devices = Device.all
   gcm = GCM.new(API_KEY)
   message_id = SecureRandom.uuid
   options = {
@@ -25,15 +40,16 @@ get '/push' do
       },
       :collapse_key => "message"
   }
-  STORE.set(message_id, {:start => Time.now}.to_json)
-  response = gcm.send_notification(registration_ids, options)
+  response = gcm.send_notification(devices.map(&:registration_id), options)
+  devices.each do |device|
+    Stats.create! :device => device, :message_id => message_id, :post_time => Time.now
+  end
   [response[:status], response[:headers], response[:body]]
 end
 
 
-get '/received/:message_id' do
-  message_id = params[:message_id]
-  stats = JSON.parse(STORE.get(message_id))
-  stats[:end] = Time.now
-  STORE.set(message_id, stats.to_json)
+get '/received/:registration_id/:message_id' do
+  device = Device.first(:registration_id => params[:registration_id])
+  stats = Stats.first(:device => device, :message_id => params[:message_id])
+  stats.update :received_time => Time.now
 end
