@@ -28,4 +28,23 @@ Sample Result:
 
 
 2) Percentage of notifications received across time of the day
-select HOUR(post_time) as posted_hour, count(*) as number_of_messages_posted, count(received_time) as number_of_messages_received, (count(received_time)/count(*))*100 as percentage_of_messages_re
+select HOUR(post_time) as posted_hour, count(*) as number_of_messages_posted, count(received_time) as number_of_messages_received, (count(received_time)/count(*))*100 as percentage_of_messages_received from stats group by posted_hour;
+
++-------------+---------------------------+-----------------------------+---------------------------------+
+| posted_hour | number_of_messages_posted | number_of_messages_received | percentage_of_messages_received |
++-------------+---------------------------+-----------------------------+---------------------------------+
+|           9 |                       204 |                          53 |                         25.9804 |
+|          10 |                       674 |                          42 |                          6.2315 |
+|          11 |                       676 |                          40 |                          5.9172 |
+|          12 |                       674 |                          27 |                          4.0059 |
+|          13 |                       926 |                          30 |                          3.2397 |
+|          14 |                      1352 |                          42 |                          3.1065 |
+|          15 |                      1350 |                         100 |                          7.4074 |
+|          16 |                      1352 |                          89 |                          6.5828 |
+|          17 |                      1044 |                          53 |                          5.0766 |
+|          18 |                       422 |                          14 |                          3.3175 |
+|          19 |                       232 |                          47 |                         20.2586 |
+|          20 |                       648 |                          75 |                         11.5741 |
+|          21 |                       128 |                           1 |                          0.7813 |
+|          23 |                       210 |                          38 |                         18.0952 |
++-------------+---------------------------+-----------------------------+---------------------------------+
