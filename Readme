@@ -3,11 +3,12 @@ Android app and a script to test the latency of Google Cloud Messaging
 Steps to Run
 ------------
 
-1) cd server && bundle install && bundle exec ruby server.rb
-2) Change SENDER_ID in GCMIntentService to your google project id
-3) Change STATISTICS_ENDPOINT in GCMIntentService to your IP where the ruby script is running (step 1)
-4) Deploy the android app to any number of devices / emulators
-5) execute "watch -n 10 'curl -s http://localhost:4567/push'" <-- Pushed a message every 10 secs
+1) Change API_KEY, mysql connection url in server/server.rb
+2) cd server && bundle install && bundle exec ruby server.rb
+3) Change SENDER_ID in GCMIntentService to your google project id
+4) Change STATISTICS_ENDPOINT in GCMIntentService to your IP where the ruby script is running (step 1)
+5) Deploy the android app to any number of devices / emulators
+6) execute "watch -n 10 'curl -s http://localhost:4567/push'" <-- Pushed a message every 10 secs
 
 Queries to get stats:
 ---------------------
