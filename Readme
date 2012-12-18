@@ -1,0 +1,31 @@
+Android app and a script to test the latency of Google Cloud Messaging
+
+Steps to Run
+------------
+
+1) cd server && bundle install && bundle exec ruby server.rb
+2) Change SENDER_ID in GCMIntentService to your google project id
+3) Change STATISTICS_ENDPOINT in GCMIntentService to your IP where the ruby script is running (step 1)
+4) Deploy the android app to any number of devices / emulators
+5) execute "watch -n 10 'curl -s http://localhost:4567/push'" <-- Pushed a message every 10 secs
+
+Queries to get stats:
+---------------------
+
+1) Max latencies
+select post_time, received_time, TIMESTAMPDIFF(SECOND, post_time, received_time) as latency from stats where received_time IS NOT NULL order by latency desc limit 5;
+
+Sample Result:
++---------------------+---------------------+---------+
+| post_time           | received_time       | latency |
++---------------------+---------------------+---------+
+| 2012-12-16 23:32:13 | 2012-12-16 23:40:50 |     517 |
+| 2012-12-18 09:39:28 | 2012-12-18 09:40:51 |      83 |
+| 2012-12-18 15:02:49 | 2012-12-18 15:03:48 |      59 |
+| 2012-12-18 15:02:59 | 2012-12-18 15:03:51 |      52 |
+| 2012-12-18 15:03:10 | 2012-12-18 15:03:54 |      44 |
++---------------------+---------------------+---------+
+
+
+2) Percentage of notifications received across time of the day
+select HOUR(post_time) as posted_hour, count(*) as number_of_messages_posted, count(received_time) as number_of_messages_received, (count(received_time)/count(*))*100 as percentage_of_messages_re
