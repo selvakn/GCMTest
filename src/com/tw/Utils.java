@@ -21,7 +21,7 @@ public class Utils {
 
     }
 
-    private static void postToUiThread(final Callable c) {
+    public static void postToUiThread(final Callable c) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             public void run() {
                 try {

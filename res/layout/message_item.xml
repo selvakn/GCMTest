@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+    <TextView
+            android:id="@+id/message_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:textSize="24sp"
+            android:textColor="@android:color/holo_red_light"
+            android:paddingLeft="20dp"
+            />
+
+    <Space
+            android:id="@+id/item_right_filler"
+            android:layout_height="24sp"
+            android:layout_width="80dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            />
+
+    <TextView android:id="@+id/latency"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_alignParentTop="true"
+              android:layout_toLeftOf="@id/item_right_filler"
+              android:textSize="24sp"
+            />
+
+    <Space
+            android:id="@+id/received_timestamp_filler"
+            android:layout_height="24sp"
+            android:layout_width="120dp"
+            android:layout_alignParentTop="true"
+            android:layout_toLeftOf="@id/latency"
+            />
+
+    <TextView
+            android:id="@+id/received_timestamp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_toLeftOf="@id/received_timestamp_filler"
+            android:textColor="@android:color/holo_blue_light"
+            android:textSize="24sp"
+            />
+
+    <Space
+            android:id="@+id/item_middle_filler"
+            android:layout_height="24sp"
+            android:layout_width="120dp"
+            android:layout_alignParentTop="true"
+            android:layout_toLeftOf="@id/received_timestamp"
+            />
+
+    <TextView
+            android:id="@+id/sent_timestamp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_toLeftOf="@id/item_middle_filler"
+            android:textColor="@android:color/holo_blue_light"
+            android:textSize="24sp"
+            />
+
+</RelativeLayout>

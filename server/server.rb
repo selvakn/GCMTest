@@ -34,15 +34,18 @@ get '/push' do
   devices = Device.all
   gcm = GCM.new(API_KEY)
   message_id = SecureRandom.uuid
+  now = Time.now
   options = {
       :data => {
-          :id => message_id
+          :id => message_id,
+          :sentTimestamp => (now.to_f * 1000.0).to_i
       },
-      :collapse_key => "message"
+      :collapse_key => "message",
+      :time_to_live => 0
   }
   response = gcm.send_notification(devices.map(&:registration_id), options)
   devices.each do |device|
-    Stats.create! :device => device, :message_id => message_id, :post_time => Time.now
+    Stats.create! :device => device, :message_id => message_id, :post_time => now
   end
   [response[:status], response[:headers], response[:body]]
 end

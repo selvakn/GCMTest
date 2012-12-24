@@ -1,13 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    >
-<TextView
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:text="Hello World, Main"
-    />
-</LinearLayout>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:orientation="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+        >
+
+    <Space
+            android:id="@+id/left_filler"
+            android:layout_width="80dp"
+            android:layout_height="24sp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            />
+
+    <TextView
+            android:id="@+id/message_id"
+            android:text="@string/message_id_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/left_filler"
+            android:layout_alignParentTop="true"
+            android:textSize="24sp"
+            />
+
+    <Space
+            android:id="@+id/right_filler"
+            android:layout_width="80dp"
+            android:layout_height="24sp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            />
+
+    <TextView
+            android:id="@+id/latency_label"
+            android:text="@string/latency"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_toLeftOf="@id/right_filler"
+            android:textSize="24sp"
+            />
+
+    <Space
+            android:id="@+id/latency_filler"
+            android:layout_width="120dp"
+            android:layout_height="24sp"
+            android:layout_alignParentTop="true"
+            android:layout_toLeftOf="@id/latency_label"
+            />
+
+    <TextView
+            android:id="@+id/received_timestamp"
+            android:text="@string/received_timestamp_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_toLeftOf="@id/latency_filler"
+            android:textSize="24sp"
+            />
+
+    <Space
+            android:id="@+id/middle_filler"
+            android:layout_width="160dp"
+            android:layout_height="24sp"
+            android:layout_alignParentTop="true"
+            android:layout_toLeftOf="@id/received_timestamp"
+            />
+
+    <TextView
+            android:text="@string/sent_timestamp_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_toLeftOf="@id/middle_filler"
+            android:textSize="24sp"
+            />
+
+    <ListView
+            android:id="@android:id/list"
+            android:layout_below="@id/message_id"
+            android:layout_alignParentBottom="true"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:animateLayoutChanges="true"
+            />
+
+    <TextView
+            android:id="@+id/empty_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/no_messages"
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="24sp"
+            android:gravity="center"
+            />
+</RelativeLayout>
 

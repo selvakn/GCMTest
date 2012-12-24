@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">GCM Test</string>
+    <string name="no_messages">No messages yet!</string>
+    <string name="message_id_label">Message ID</string>
+    <string name="received_timestamp_label">Received</string>
+    <string name="sent_timestamp_label">Sent</string>
+    <string name="latency">Latency</string>
 </resources>
