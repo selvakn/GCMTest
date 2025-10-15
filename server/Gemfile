@@ -1,6 +1,6 @@
 source :rubygems
 
-gem 'sinatra'
+gem 'sinatra', '>= 4.2.0'
 gem 'gcm'
 gem 'mysql2'
 gem 'datamapper'
