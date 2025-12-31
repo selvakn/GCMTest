@@ -1,7 +1,7 @@
 source :rubygems
 
 gem 'sinatra'
-gem 'gcm'
+gem 'gcm', '>= 0.0.4'
 gem 'mysql2'
 gem 'datamapper'
 gem 'dm-mysql-adapter'

@@ -3,6 +3,8 @@ GEM
   specs:
     addressable (2.2.8)
     bcrypt-ruby (3.0.1)
+    bigdecimal (3.3.1)
+    csv (3.3.5)
     data_objects (0.10.10)
       addressable (~> 2.1)
     datamapper (1.2.0)
@@ -52,16 +54,19 @@ GEM
     do_mysql (0.10.10)
       data_objects (= 0.10.10)
     fastercsv (1.5.5)
-    gcm (0.0.2)
+    gcm (0.1.1)
       httparty
       json
-    httparty (0.9.0)
-      multi_json (~> 1.0)
-      multi_xml
-    json (1.7.5)
+    httparty (0.24.0)
+      csv
+      mini_mime (>= 1.0.0)
+      multi_xml (>= 0.5.2)
+    json (1.8.6)
     json_pure (1.7.5)
-    multi_json (1.5.0)
-    multi_xml (0.5.1)
+    mini_mime (1.1.5)
+    multi_json (1.19.1)
+    multi_xml (0.7.1)
+      bigdecimal (~> 3.1)
     mysql2 (0.3.11)
     rack (1.4.1)
     rack-protection (1.3.2)
@@ -80,6 +85,9 @@ PLATFORMS
 DEPENDENCIES
   datamapper
   dm-mysql-adapter
-  gcm
+  gcm (>= 0.0.4)
   mysql2
   sinatra
+
+BUNDLED WITH
+   2.3.27
