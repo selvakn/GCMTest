@@ -9,6 +9,49 @@ for the full behavioral specification, and
 [`specs/001-push-notification-latency/plan.md`](specs/001-push-notification-latency/plan.md)
 for the technical design.
 
+## Sample results
+
+From a real 100-round test (5-second intervals, ~8.5 minutes) run against the
+`docker-compose` setup below — one coordinator container, one real device (Motorola Edge
+30 Ultra, Android 15) connected over USB via `adb reverse`, and one `docker-android`
+emulator (Android 14) on the compose network:
+
+**Delivery success**
+
+| Device | Platform | Rounds targeted | Received | Success rate |
+|---|---|---|---|---|
+| Real device (Motorola Edge 30 Ultra) | Android 15 | 100 | 100 | 100% |
+| Emulator (docker-android) | Android 14 | 100 | 100 | 100% |
+
+Both devices received every round. 19 of the real device's 100 receipts, and all 100 of
+the emulator's, were flagged **anomalous** (non-positive computed latency) rather than
+counted as a plain success — not because delivery failed, but because the device's clock
+was measurably behind the coordinator's at that instant (the emulator's virtualized clock
+ran a consistent ~145ms behind; the real device drifted more randomly, by a few tens of
+milliseconds). This is the anomaly detection (FR-026) working as intended: the original
+app being replaced miscategorized this exact case as a successful "good" result, which is
+the bug this behavior explicitly corrects.
+
+**Latency, real device, excluding clock-skew anomalies (n=81)**
+
+| Min | Median | Average | p95 | Max |
+|---|---|---|---|---|
+| 1 ms | 57 ms | 63.2 ms | 131 ms | 296 ms |
+
+**Slowest individual deliveries**
+
+| Round | Sent | Received | Latency |
+|---|---|---|---|
+| `69578cc2` | 16:55:01.553 | 16:55:01.850 | 296 ms |
+| `882e29ee` | 16:49:26.317 | 16:49:26.520 | 202 ms |
+| `3ad0a4bb` | 16:52:21.814 | 16:52:22.005 | 190 ms |
+| `22d84a16` | 16:49:10.759 | 16:49:10.922 | 163 ms |
+| `a62f5f17` | 16:50:28.125 | 16:50:28.257 | 131 ms |
+
+Reproduce this yourself with `docker compose up`, the `/v1/reports/deliveries` and
+`/v1/reports/success-rate` endpoints, and the same `curl` loop described under
+[Scheduling repeated rounds](#scheduling-repeated-rounds-fr-003).
+
 ## Architecture
 
 ```
@@ -51,6 +94,36 @@ make build-android
 See [`quickstart.md`](specs/001-push-notification-latency/quickstart.md) for a full
 walkthrough, including a curl-driven end-to-end example (enroll a device, trigger a
 round, inspect the reports).
+
+## Running the whole stack with Docker Compose
+
+`docker-compose.yml` brings up the coordinator alongside an Android emulator:
+
+```sh
+echo "OPERATOR_TOKEN=$(openssl rand -hex 24)" > .env
+docker compose up -d
+```
+
+- `coordinator` — built from `server/Dockerfile`, published on `localhost:18080`, backed
+  by the `fcm_service_account` secret (`secrets/fcm-service-account.json`, see
+  `secrets/README.md`) and a named volume for the SQLite file.
+- `android` — a `budtmo/docker-android` emulator (Android 14, `google_apis_playstore`).
+  The Play-Store-certified system image is required for real FCM delivery — the generic
+  `google_apis` image gets `AUTHENTICATION_FAILED` from Google's servers when requesting
+  an FCM token. Once it has booted, install the `docker` Gradle flavor's APK
+  (`COORDINATOR_BASE_URL=http://coordinator:8080/v1`, resolved via the compose network's
+  DNS).
+
+To use a **real device** instead of/alongside the emulator: connect it over USB with
+debugging enabled, then forward its loopback back to the coordinator regardless of the
+device's own network:
+
+```sh
+adb reverse tcp:8080 tcp:18080
+```
+
+and build/install the `device` Gradle flavor (`COORDINATOR_BASE_URL=http://localhost:8080/v1`,
+which resolves through that reverse tunnel).
 
 ## Server: environment variables
 

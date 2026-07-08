@@ -8,8 +8,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.messaging.FirebaseMessaging
 import com.tw.pushlatency.databinding.ActivityMainBinding
 import com.tw.pushlatency.enrollment.EnrollmentManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
@@ -48,11 +50,18 @@ class MainActivity : AppCompatActivity() {
                 return@addOnCompleteListener
             }
             val token = task.result
-            when (EnrollmentManager(applicationContext).enrollIfNeeded(token)) {
-                is EnrollmentManager.Result.AlreadyEnrolled ->
-                    Toast.makeText(this, R.string.enrollment_already_active, Toast.LENGTH_SHORT).show()
-                is EnrollmentManager.Result.Enrolled -> Unit
-                is EnrollmentManager.Result.Failed -> showEnrollmentFailure()
+            // Enrollment does blocking network I/O — never run it on the main
+            // thread (Firebase Task listeners fire there by default).
+            lifecycleScope.launch {
+                val result = withContext(Dispatchers.IO) {
+                    EnrollmentManager(applicationContext).enrollIfNeeded(token)
+                }
+                when (result) {
+                    is EnrollmentManager.Result.AlreadyEnrolled ->
+                        Toast.makeText(this@MainActivity, R.string.enrollment_already_active, Toast.LENGTH_SHORT).show()
+                    is EnrollmentManager.Result.Enrolled -> Unit
+                    is EnrollmentManager.Result.Failed -> showEnrollmentFailure()
+                }
             }
         }
     }

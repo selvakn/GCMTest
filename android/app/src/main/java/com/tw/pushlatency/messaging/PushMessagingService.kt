@@ -61,6 +61,9 @@ class PushMessagingService : FirebaseMessagingService() {
     override fun onNewToken(token: String) {
         // The platform issued a new push identity; re-enroll with it so the
         // fleet roster stays accurate, keeping the same install_id (FR-019).
-        EnrollmentManager(applicationContext).enrollOrUpdate(pushToken = token)
+        // Enrollment does blocking network I/O — never on the main thread.
+        scope.launch {
+            EnrollmentManager(applicationContext).enrollOrUpdate(pushToken = token)
+        }
     }
 }

@@ -1,0 +1,44 @@
+services:
+  coordinator:
+    build:
+      context: ./server
+    ports:
+      - "18080:8080"
+    environment:
+      DB_PATH: /data/coordinator.db
+      MIGRATIONS_DIR: /migrations
+      LISTEN_ADDR: :8080
+      OPERATOR_TOKEN: ${OPERATOR_TOKEN:?set OPERATOR_TOKEN in .env}
+      FCM_SERVICE_ACCOUNT_JSON: /run/secrets/fcm_service_account
+    volumes:
+      - coordinator-data:/data
+    secrets:
+      - fcm_service_account
+
+  android:
+    image: budtmo/docker-android:emulator_14.0
+    privileged: true
+    devices:
+      - /dev/kvm
+    ports:
+      - "15554:5554"
+      - "15555:5555"
+      - "16080:6080"
+    environment:
+      EMULATOR_DEVICE: "Samsung Galaxy S10"
+      EMULATOR_ANDROID_VERSION: "14.0"
+      EMULATOR_API_LEVEL: "34"
+      EMULATOR_SYS_IMG: "x86_64"
+      EMULATOR_IMG_TYPE: "google_apis_playstore"
+      WEB_VNC: "true"
+    volumes:
+      - ./android/app/build/outputs/apk/docker/debug/app-docker-debug.apk:/root/app-docker-debug.apk:ro
+    depends_on:
+      - coordinator
+
+secrets:
+  fcm_service_account:
+    file: ./secrets/fcm-service-account.json
+
+volumes:
+  coordinator-data:

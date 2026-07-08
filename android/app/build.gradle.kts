@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -34,6 +35,23 @@ android {
         create("prod") {
             dimension = "environment"
             buildConfigField("String", "COORDINATOR_BASE_URL", "\"https://coordinator.example.com/v1\"")
+        }
+        create("docker") {
+            dimension = "environment"
+            applicationIdSuffix = ".docker"
+            // Matches the `coordinator` service name in docker-compose.yml — for
+            // running the client inside the docker-android emulator alongside the
+            // coordinator container, where the 10.0.2.2 host-loopback trick used by
+            // `dev` doesn't reach a separate container.
+            buildConfigField("String", "COORDINATOR_BASE_URL", "\"http://coordinator:8080/v1\"")
+        }
+        create("device") {
+            dimension = "environment"
+            applicationIdSuffix = ".device"
+            // For a real device connected over USB with `adb reverse tcp:8080 tcp:<host-port>`
+            // forwarding the device's own localhost:8080 back to the coordinator, regardless
+            // of the device's own Wi-Fi/network configuration.
+            buildConfigField("String", "COORDINATOR_BASE_URL", "\"http://localhost:8080/v1\"")
         }
     }
 
@@ -91,7 +109,7 @@ dependencies {
 
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
-    annotationProcessor("androidx.room:room-compiler:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 }

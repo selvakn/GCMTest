@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+      Debug builds only (dev/staging/docker flavors point at a plain-HTTP
+      coordinator for local/internal testing). Release builds keep the
+      default cleartext-blocked behavior — the prod flavor uses HTTPS.
+    -->
+    <application android:usesCleartextTraffic="true" />
+
+</manifest>
