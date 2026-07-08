@@ -2,7 +2,7 @@ name: Android Release
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     tags: ["android-v*"]
   pull_request:
     paths:
