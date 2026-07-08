@@ -1,0 +1,12 @@
+{
+  "name": "gcmtest-infra-tools",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "workspaceFolder": "/workspace",
+  "mounts": [
+    "source=gcmtest-gcloud-config,target=/root/.config/gcloud,type=volume",
+    "source=gcmtest-gh-config,target=/root/.config/gh,type=volume"
+  ]
+}

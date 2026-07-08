@@ -1,0 +1,251 @@
+openapi: 3.0.3
+info:
+  title: Push Notification Latency Coordinator API
+  version: "1.0.0"
+  description: >
+    Generic, platform-agnostic coordinator API for enrolling devices, triggering
+    measurement rounds, recording receipts, and reporting latency/success-rate
+    statistics. See specs/001-push-notification-latency/spec.md.
+servers:
+  - url: /v1
+
+paths:
+  /devices:
+    post:
+      summary: Enroll or re-enroll a device (fleet-membership operation; open to any device — FR-001, spec.md §8)
+      operationId: enrollDevice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnrollDeviceRequest'
+      responses:
+        '200':
+          description: Enrolled or updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrollDeviceResponse'
+        '400':
+          description: Malformed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /rounds:
+    post:
+      summary: Trigger a round (privileged — FR-029)
+      operationId: triggerRound
+      security:
+        - operatorToken: []
+      responses:
+        '202':
+          description: Round dispatched; per-device outcomes resolve asynchronously
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerRoundResponse'
+        '401':
+          description: Missing or invalid operator credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /rounds/{round_id}/receipts:
+    post:
+      summary: Report that a device received a round (FR-009, FR-012)
+      operationId: reportReceipt
+      parameters:
+        - name: round_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportReceiptRequest'
+      responses:
+        '200':
+          description: >
+            Always returns 200 for well-formed requests, even when the report is
+            a no-op — see `status` in the response body (FR-011, FR-012).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportReceiptResponse'
+        '400':
+          description: Malformed request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /reports/deliveries:
+    get:
+      summary: Individual delivery latencies, sortable/filterable for finding the slowest deliveries (FR-013)
+      operationId: listDeliveries
+      parameters:
+        - name: round_id
+          in: query
+          schema:
+            type: string
+        - name: order
+          in: query
+          schema:
+            type: string
+            enum: [latency_desc, latency_asc, sent_at_desc]
+            default: sent_at_desc
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 500
+      responses:
+        '200':
+          description: Matching deliveries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeliveryRecord'
+
+  /reports/success-rate:
+    get:
+      summary: Delivery success rate, sliceable by round send time (FR-014)
+      operationId: successRateReport
+      parameters:
+        - name: bucket
+          in: query
+          description: Time bucket to group rounds by
+          schema:
+            type: string
+            enum: [hour, day]
+            default: hour
+        - name: since
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: until
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Success-rate buckets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SuccessRateBucket'
+
+components:
+  securitySchemes:
+    operatorToken:
+      type: http
+      scheme: bearer
+      description: Static operator/scheduler bearer token (FR-029); stored as a secret, not in source (FR-030).
+
+  schemas:
+    EnrollDeviceRequest:
+      type: object
+      required: [install_id, platform, push_token]
+      properties:
+        install_id:
+          type: string
+          description: Stable, app-generated installation ID persisted on the device (Clarification Q1)
+        platform:
+          type: string
+          example: android
+        push_token:
+          type: string
+          description: Current platform push token/registration ID
+
+    EnrollDeviceResponse:
+      type: object
+      properties:
+        device_id:
+          type: string
+        status:
+          type: string
+          enum: [enrolled, updated]
+
+    TriggerRoundResponse:
+      type: object
+      properties:
+        round_id:
+          type: string
+        sent_at:
+          type: string
+          format: date-time
+        targeted_device_count:
+          type: integer
+
+    ReportReceiptRequest:
+      type: object
+      required: [install_id, received_at]
+      properties:
+        install_id:
+          type: string
+        received_at:
+          type: string
+          format: date-time
+          description: Client-captured arrival timestamp (Research §6) — used as-is, even if it produces a non-positive latency (clock-skew anomaly, FR-026)
+
+    ReportReceiptResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [recorded, duplicate_ignored, invalid]
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+
+    DeliveryRecord:
+      type: object
+      properties:
+        round_id:
+          type: string
+        device_id:
+          type: string
+        sent_at:
+          type: string
+          format: date-time
+        received_at:
+          type: string
+          format: date-time
+          nullable: true
+        latency_ms:
+          type: integer
+          nullable: true
+        status:
+          type: string
+          enum: [pending, received_good, received_anomalous]
+
+    SuccessRateBucket:
+      type: object
+      properties:
+        bucket_start:
+          type: string
+          format: date-time
+        targeted:
+          type: integer
+        received:
+          type: integer
+        success_rate:
+          type: number
+          format: float

@@ -4,3 +4,38 @@ target
 *.iml
 classes
 gen
+
+# Go
+server/coordinator
+*.test
+*.out
+.gocache/
+
+# SQLite data
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+coordinator.db
+
+# Android / Gradle
+android/build/
+android/app/build/
+android/.gradle/
+android/local.properties
+android/app/google-services.json
+android/*.jks
+android/*.keystore
+*.apk
+*.aab
+.gradle/
+
+# Secrets — never commit
+*service-account*.json
+*.pem
+*.p12
+/secrets/
+
+# Editor / OS
+.DS_Store
+*.swp

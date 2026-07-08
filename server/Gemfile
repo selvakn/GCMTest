@@ -1,7 +1,0 @@
-source :rubygems
-
-gem 'sinatra'
-gem 'gcm'
-gem 'mysql2'
-gem 'datamapper'
-gem 'dm-mysql-adapter'
