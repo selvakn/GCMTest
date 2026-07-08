@@ -2,7 +2,7 @@ name: Server Release
 
 on:
   push:
-    branches: [master]
+    branches: [main]
     tags: ["server-v*"]
   pull_request:
     paths:
