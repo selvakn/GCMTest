@@ -34,6 +34,7 @@ android/*.keystore
 *service-account*.json
 *.pem
 *.p12
+/secrets/
 
 # Editor / OS
 .DS_Store
