@@ -1,0 +1,9 @@
+.git
+android/
+specs/
+*.md
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+*service-account*.json

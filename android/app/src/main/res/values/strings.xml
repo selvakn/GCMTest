@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Push Latency</string>
+    <string name="empty_state">No rounds received yet</string>
+    <string name="enrollment_already_active">Enrollment already active</string>
+    <string name="enrollment_failed">Enrollment failed — will retry later</string>
+    <string name="round_label">Round %1$s</string>
+    <string name="sent_received_label">Sent %1$s · Received %2$s</string>
+</resources>
