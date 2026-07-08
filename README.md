@@ -161,6 +161,12 @@ scheduler works — a cron job, a scheduled GitHub Actions workflow, etc.:
 watch -n 30 curl -sX POST "$COORDINATOR_URL/v1/rounds" -H "authorization: Bearer $OPERATOR_TOKEN"
 ```
 
+## Research notes
+
+- [`docs/android-background-execution-limits.md`](docs/android-background-execution-limits.md) —
+  empirical findings on how long Android lets FCM-triggered background work run before
+  the OS intervenes, across foreground/background/Doze states.
+
 ## Building, testing, linting
 
 ```sh
