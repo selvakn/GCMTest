@@ -35,6 +35,16 @@ to run this experiment:
   field short-circuits normal round handling and starts the corresponding service/mode
   instead. Values used: `bg_service`, `fg_service`, `bg_service_socket`,
   `fg_service_socket`, `datasync_service`.
+- `ExperimentEventBus` + `AlwaysOnBackgroundService` — a second, distinct harness added
+  for the `existing_service_socket` value: rather than the push starting a *new* service,
+  `AlwaysOnBackgroundService` is started once, at app-process start
+  (`PushLatencyApp.onCreate`), and is otherwise a genuine no-op — simulating "the app
+  always has a background service running." The push only emits an event onto an
+  in-process `MutableSharedFlow` event bus; the already-running service is what reacts to
+  it and opens the socket. No `startService()`/`startForegroundService()` call happens as
+  part of handling this push at all. This tests whether *how* a service comes to be doing
+  work (freshly started by the push vs. pre-existing and merely notified) changes its
+  survival characteristics.
 - Test messages were sent directly via the FCM Admin API (bypassing the coordinator's
   `/v1/rounds` — this is ad hoc infra testing, not part of the product's round data
   model), targeting one real device's push token directly.
@@ -134,6 +144,59 @@ results say "no problem within 5 minutes," not "no problem ever."
   #7 at 79.99s) landing within 50ms of each other is a good sign it's a fairly stable
   timer-based threshold on this device/version rather than a noisy heuristic, but it
   should still not be hardcoded into product logic as a guarantee.
+
+## 2026-07-09 — Motorola Edge 30 Ultra, Android 15 (API 35) — pre-existing service + event bus
+
+Extends the 2026-07-08 entry with one more scenario: instead of the push starting a new
+service, a service that was already running (started at app launch, idle ever since) is
+merely notified via an in-process event bus (`ExperimentEventBus`) and only then opens the
+socket. Tested backgrounded and in forced Doze. Same device/setup as above.
+
+| # | App state | Service type | Workload | Started OK? | Result | Killed by |
+|---|---|---|---|---|---|---|
+| 8 | Backgrounded | **Pre-existing** plain background `Service`, notified via event bus (no `startService()` call from the push) | live socket | Yes | Socket ran **~108s** before teardown | `ActivityManager`: `"Stopping service due to app idle"` (108.2s after socket connect) |
+| 9 | Doze (forced deep idle) | **Pre-existing** plain background `Service`, notified via event bus (no `startService()` call from the push) | live socket | Yes | Socket itself **failed at ~35s wall-clock** (`SocketTimeoutException`); the service process wasn't killed until **~80s** | Socket: `SocketTimeoutException`. Service: `ActivityManager`: `"Stopping service due to app idle"` (~80.0s after socket connect) |
+
+### Findings
+
+7. **Routing a push to an already-running service via an event bus, instead of starting a
+   new service from the push, does not exempt it from "app idle" enforcement** — the
+   service was still killed (#8) — but it survived noticeably longer (~108s) than every
+   previously measured plain-background-service scenario (~80s: #2, #5, #7). This is a
+   single measurement, not a confirmed general rule (see caveats), but it's consistent
+   with the "app idle" timer being anchored to when the *app* was last in active use
+   rather than to when this specific unit of background work began — a pre-existing,
+   already-idle service doesn't reset that clock the way a freshly-triggered one might
+   appear to.
+8. **In Doze, this scenario surfaced a distinct failure mode that hadn't been isolated
+   before: the socket's own read failed well ahead of the service being killed.** The
+   read raised `SocketTimeoutException` at roughly 35 seconds of real wall-clock time
+   (the loop's own nominal counter, incremented per completed 10s cycle, only reached
+   "elapsedSeconds=20" — a ~15s gap consistent with Doze deferring the in-flight network
+   call rather than failing it immediately). The service process itself lived on
+   afterward and wasn't torn down until ~80 seconds post-connect (#9) — matching the
+   original ~80s "app idle" baseline (#2, #5, #7) almost exactly. In other words: **Doze's
+   network-access restriction and the app-idle service-kill timer are two independent
+   constraints, and the network one bites first** for anything depending on an open
+   connection — sharpening finding #4 from the prior entry, which only checked
+   service/process survival and not live network I/O under Doze.
+
+### Caveats
+
+- Each of #8 and #9 is a single trial, same as the rest of this document — the ~108s
+  figure in particular should not be read as "pre-existing services reliably get ~28
+  extra seconds." It may instead reflect this run's specific timing between when the app
+  was backgrounded and when the push arrived. Repeat trials, varying that gap
+  deliberately, would be needed to tell those explanations apart.
+- The "~35s wall-clock vs. elapsedSeconds=20" gap in #9 is inferred purely from log
+  timestamps, not from direct instrumentation of the read call — the breakdown between
+  connect time, Doze deferral, and normal read-timeout duration within that one blocked
+  call wasn't isolated.
+- Foreground service + live socket, still not tested. Doze + live socket *was* now tested
+  for the pre-existing/event-bus case (#9), narrowing but not eliminating the prior
+  caveat.
+- Same single-device/single-OEM/single-Android-version limitation as the rest of this
+  document applies.
 
 ## Template for future entries
 
