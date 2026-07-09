@@ -3,6 +3,9 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
     <application
         android:name=".PushLatencyApp"
@@ -28,6 +31,27 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
+        <!-- Diagnostic-only: see experiment.BaseExperimentService kdoc. -->
+        <service
+            android:name=".experiment.LongRunningTestService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="background-execution-limit-diagnostic" />
+        </service>
+
+        <!-- Diagnostic-only: see experiment.DataSyncTestService kdoc. -->
+        <service
+            android:name=".experiment.DataSyncTestService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
+        <!-- Diagnostic-only: see experiment.AlwaysOnBackgroundService kdoc. -->
+        <service
+            android:name=".experiment.AlwaysOnBackgroundService"
+            android:exported="false" />
 
     </application>
 
